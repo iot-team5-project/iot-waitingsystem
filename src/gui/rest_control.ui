@@ -109,7 +109,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>1번</string>
+    <string>2번</string>
    </property>
    <widget class="QLineEdit" name="statusEdit_2">
     <property name="geometry">
@@ -158,7 +158,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>1번</string>
+    <string>3번</string>
    </property>
    <widget class="QLineEdit" name="statusEdit_3">
     <property name="geometry">

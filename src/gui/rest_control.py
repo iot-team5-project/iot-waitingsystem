@@ -12,6 +12,7 @@ user_status = uic.loadUiType("user_status.ui")[0]
 
 WaitNewCustomer = False
 waitCount = 0
+regMode = False
 
 class Control_TowerClass(QDialog, rest_control) :
     def __init__(self):
@@ -19,9 +20,13 @@ class Control_TowerClass(QDialog, rest_control) :
         self.setupUi(self)
         self.setWindowTitle("Restaurant Control Tower")
         self.btnUser.clicked.connect(self.customerWindow)
+        # self.btnUser_2.clicked.connect(self.customerWindow)
+        # self.btnUser_3.clicked.connect(self.customerWindow)
 
     def customerWindow(self):
         window_2 = Customer()
+        # uic.loadUi("user_reg.ui", window_2)
+        # self.setWindowTitle("USER UI")
         window_2.exec_()
 
     def waitinglist(self, headcount):
@@ -41,16 +46,20 @@ class Customer(QDialog, user_basic, user_reg, user_reg_complete, user_status) :
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("USER UI")
-        self.regMode = False
-        self.btnLine.clicked.connect(self.customMakeLine)
         
+        if regMode == True:
+            self.btnLine.setText("나의 줄 확인")
+            self.btnLine.clicked.connect(self.customRegStatus)
+
+        else:
+            self.btnLine.clicked.connect(self.customMakeLine)
 
     def customMakeLine(self):
-        dialog = QDialog()
-        uic.loadUi("user_reg.ui", dialog)
-        dialog.setWindowTitle("USER UI Register")
-        dialog.btnReg.clicked.connect(lambda : self.customerReg(dialog))
-        dialog.exec_()
+        linedialog = QDialog()
+        uic.loadUi("user_reg.ui", linedialog)
+        linedialog.setWindowTitle("USER UI Register")
+        linedialog.btnReg.clicked.connect(lambda : self.customerReg(linedialog))
+        linedialog.exec_()
 
     def customerReg(self, dialog):
         global WaitNewCustomer, waitCount
@@ -62,18 +71,20 @@ class Customer(QDialog, user_basic, user_reg, user_reg_complete, user_status) :
         self.customerRegComplete(waitCount)
 
     def customerRegComplete(self, waitCount):
-        dialog = QDialog()
-        uic.loadUi("user_reg_complete.ui", dialog)
-        dialog.setWindowTitle("USER UI Complete")
-        dialog.entranceNum.setText(str(waitCount))
-        dialog.exec_()
+        regdialog = QDialog()
+        global regMode
+        uic.loadUi("user_reg_complete.ui", regdialog)
+        regdialog.setWindowTitle("USER UI Complete")
+        regdialog.entranceNum.setText(str(waitCount))
+        regMode = True
+        regdialog.exec_()
 
-    def customRegStatus(self, entrance_num):
-        dialog = QDialog()
-        uic.loadUi("user_status.ui", dialog)
-        dialog.setWindowTitle("USER UI Status")
-        dialog.entranceNum.setText(str(entrance_num))
-        dialog.exec_()
+    def customRegStatus(self):
+        statusdialog = QDialog()
+        uic.loadUi("user_status.ui", statusdialog)
+        statusdialog.setWindowTitle("USER UI Status")
+        statusdialog.entranceNum.setText(str(waitCount))
+        statusdialog.exec_()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

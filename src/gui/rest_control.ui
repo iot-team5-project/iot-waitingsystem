@@ -207,7 +207,33 @@
     </rect>
    </property>
    <property name="text">
-    <string>user</string>
+    <string>user1</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnUser_2">
+   <property name="geometry">
+    <rect>
+     <x>920</x>
+     <y>20</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>user2</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnUser_3">
+   <property name="geometry">
+    <rect>
+     <x>1020</x>
+     <y>20</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>user3</string>
    </property>
   </widget>
  </widget>

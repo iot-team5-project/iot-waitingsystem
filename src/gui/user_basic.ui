@@ -64,14 +64,27 @@
   <widget class="QPushButton" name="btnLine">
    <property name="geometry">
     <rect>
-     <x>60</x>
+     <x>10</x>
      <y>140</y>
-     <width>111</width>
+     <width>101</width>
      <height>51</height>
     </rect>
    </property>
    <property name="text">
     <string>줄서기</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnVal">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>140</y>
+     <width>101</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>나의 줄 확인</string>
    </property>
   </widget>
  </widget>

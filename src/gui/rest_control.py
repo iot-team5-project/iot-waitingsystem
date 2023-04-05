@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
+import paho.mqtt.client as mqtt
 
 rest_control = uic.loadUiType("rest_control.ui")[0]
 user_basic = uic.loadUiType("user_basic.ui")[0]
@@ -23,6 +24,12 @@ class Control_TowerClass(QDialog, rest_control) :
         # self.btnUser_2.clicked.connect(self.customerWindow)
         # self.btnUser_3.clicked.connect(self.customerWindow)
 
+        #20230404 노태형추가 - MQTT 프로토콜
+        self.mqtt_client = mqtt.Client()
+        self.mqtt_client.on_connect = self.on_connect
+        self.mqtt_client.on_message = self.on_message
+        self.mqtt_client.connect('192.168.0.120', 1883, 60)
+
     def customerWindow(self):
         window_2 = Customer()
         # uic.loadUi("user_reg.ui", window_2)
@@ -40,6 +47,21 @@ class Control_TowerClass(QDialog, rest_control) :
             for i in range(3):
                 self.WaitingList.item(row, i).setTextAlignment(Qt.AlignCenter)
             WaitNewCustomer = False
+
+    # 20230404 노태형변경 - MQTT Message
+    def on_connect(self, client, userdata, flags, rc):
+        print("Connected to MQTT broker")
+        client.subscribe("switch1_status")
+        client.subscribe("switch2_status")
+
+    # 20230405 노태형추가변경 - MQTT Receive Message
+    def on_message(self, client, userdata, msg):
+        topic = msg.topic
+        payload = msg.payload.decode("utf-8")
+        if topic == "switch1_status":
+            self.switch1_label.setText("Switch 1: " + payload)
+        elif topic == "switch2_status":
+            self.switch2_label.setText("Switch 2: " + payload)
 
 class Customer(QDialog, user_basic, user_reg, user_reg_complete, user_status) :
     def __init__(self):

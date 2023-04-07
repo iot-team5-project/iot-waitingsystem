@@ -21,13 +21,13 @@ class Control_TowerClass(QDialog, rest_control) :
         self.timer.timeout.connect(self.updateDateTime)
         self.timer.start(1000)
         self.btnUser.clicked.connect(self.customerWindow)
-        self.btnAdmin.clicked.connect(self.addTable)
+        # self.btnAdmin.clicked.connect(self.addTable)
         self.WaitingList.cellDoubleClicked.connect(self.selectCustom)
 
     def selectCustom(self, row):
         infodialog = QDialog()
         uic.loadUi("customerInfo.ui", infodialog)
-
+        selectItem = self.WaitingList.item(row, 0)
         def adminCustomerEntrance():
             for tableInfo in Control_TowerClass.statusTable:
                 if Customer.Waitcustomer_info == []:
@@ -36,24 +36,24 @@ class Control_TowerClass(QDialog, rest_control) :
                     index = Control_TowerClass.statusTable.index([0])
                     Control_TowerClass.statusTable[index] = [1]
                     myWindows.WaitingList.removeRow(selectItem.row())
-                    Customer.Waitcustomer_info.remove(info)
+                    print(tempInfo)
+                    Customer.Waitcustomer_info.remove(tempInfo)
                     infodialog.close()
+                    break
 
         def adminCustomerDelete():
             bookedCancel = QMessageBox.question(self, '예약취소', '예약을 취소하시겠습니까?', QMessageBox.Yes | QMessageBox.Yes, QMessageBox.No)
             if bookedCancel == QMessageBox.Yes:
                 myWindows.WaitingList.removeRow(selectItem.row())
-                Customer.Waitcustomer_info.remove(info)
+                Customer.Waitcustomer_info.remove(tempInfo)
                 infodialog.close()
     
         for info in Customer.Waitcustomer_info:
-            selectItem = self.WaitingList.item(row, 0)
             if info[0] == selectItem.text():
+                tempInfo = info
                 infodialog.infoLabel.setText("|| 대기번호: "+ info[0] +" || 인원수: " + info[1] +"명"+" || \n"+"연락처: "+ info[2])
-                print(info)
                 infodialog.btnEntrance.clicked.connect(adminCustomerEntrance)
                 infodialog.btnDelete.clicked.connect(adminCustomerDelete)
-
         infodialog.btnConfirm.clicked.connect(infodialog.close)
         infodialog.exec_()
 
@@ -62,16 +62,6 @@ class Control_TowerClass(QDialog, rest_control) :
         dateTimeStr = now.toString("yyyy년 MM월 dd일 hh:mm:ss")
         self.currentTime.setText(dateTimeStr)
 
-    def addTable(self):
-        for tableInfo in Control_TowerClass.statusTable:
-            if Customer.Waitcustomer_info == []:
-                break
-            elif tableInfo == [0]:
-                index = Control_TowerClass.statusTable.index([0])
-                Control_TowerClass.statusTable[index] = [1]
-                myWindows.WaitingList.removeRow(0)
-                del Customer.Waitcustomer_info[0]                    
-            
     def confirmTable(self):
         statusT=Control_TowerClass.statusTable
         for i in range(1, 8):
@@ -186,4 +176,3 @@ if __name__ == "__main__":
     myWindows.show()
     myWindows.currentTime.textChanged.connect(myWindows.confirmTable)
     sys.exit(app.exec_())
-    

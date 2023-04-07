@@ -45,13 +45,11 @@ class Table_StateClass(QDialog, table_state) :
 
 class Control_TowerClass(QDialog, rest_control) :
     user_newWindow = None
-<<<<<<< HEAD
+
     # 점포 내 테이블
-    statusTable=[['admin'], [0], [0], [0], [1], [2], [3], [2]]
-=======
     table_newWindow = None
     statusTable=[['admin'], [0], [0], [0], [1], [2], [3], [4]]
->>>>>>> 26bc4f37a1814082b3c646e136d2348c73726d50
+
     
     def __init__(self):
         super().__init__()
@@ -74,7 +72,6 @@ class Control_TowerClass(QDialog, rest_control) :
         # self.btnAdmin.clicked.connect(self.addTable)
         self.WaitingList.cellDoubleClicked.connect(self.selectCustomer)
 
-<<<<<<< HEAD
         #region 20230407_thro Sensor TCP/IP
         #BUTTON COMMAND
         
@@ -104,10 +101,7 @@ class Control_TowerClass(QDialog, rest_control) :
         #endregion
 
     #region 임용재 예약손님 확인창
-    def selectCustom(self, row):
-=======
     def selectCustomer(self, row):
->>>>>>> 26bc4f37a1814082b3c646e136d2348c73726d50
         infodialog = QDialog()
         ##################################################################
         # UI_file : customerInfo.ui                                      #

@@ -61,30 +61,6 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="timeLabel">
-   <property name="geometry">
-    <rect>
-     <x>930</x>
-     <y>50</y>
-     <width>300</width>
-     <height>60</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>30</pointsize>
-    </font>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="text">
-    <string>2 : 00 : 00</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
@@ -150,6 +126,27 @@
    </property>
    <property name="text">
     <string>조리완료</string>
+   </property>
+  </widget>
+  <widget class="QTimeEdit" name="timeEdit">
+   <property name="geometry">
+    <rect>
+     <x>940</x>
+     <y>60</y>
+     <width>311</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>31</pointsize>
+    </font>
+   </property>
+   <property name="currentSection">
+    <enum>QDateTimeEdit::AmPmSection</enum>
+   </property>
+   <property name="timeSpec">
+    <enum>Qt::UTC</enum>
    </property>
   </widget>
  </widget>

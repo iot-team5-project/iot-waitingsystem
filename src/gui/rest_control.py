@@ -15,12 +15,16 @@ waitCount = 0
 IP = '192.168.0.129'
 PORT = 80
 
+#g, gram
+WEIGHT = 1000
+
 class Table_StateClass(QDialog, table_state) :
     def __init__(self, tableNum) :
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Table State view")
         self.tableNum.setText(str(tableNum))
+        
         if Control_TowerClass.statusTable[tableNum] == [0]:
             self.tableStateLabel.setText("고객 대기 중")
             self.tableStateBack.setStyleSheet("background-color: #01DF01")
@@ -171,7 +175,7 @@ class Control_TowerClass(QDialog, rest_control) :
                 label.setText("호출 중")
                 back.setStyleSheet("background-color: #FA5858")
     #endregion
-    #region 20230407_thro Server Connect
+    #region 20230407_thro Server Connect 현재 조정 중
     def connecting(self):
         if __debug__:
             print('connecting')
@@ -192,27 +196,51 @@ class Control_TowerClass(QDialog, rest_control) :
             self.sock.close()
             self.timer2.stop()
             self.timer3.stop()
+    if __debug__:
+        def timeout2(self) :
+            self.updateWeight(1, 1)
 
-    def timeout2(self) :
-        self.updateWeight(1, 1)
+        def timeout3(self) :
+            self.updateWeight(2, 1)
 
-    def timeout3(self) :
-        self.updateWeight(2, 1)
+        def updateWeight(self, table, weight) :
+            if __debug__:
+                print('Update')
+            ## @ii -> 구조체 : integer 2개
+            # data = struct.pack('@ii', pin, status)
+            # test = struct.unpack("@ii", data)
+            if self.connect_mode == True :
+                data = self.format.pack(table, weight)
+                req = self.sock.send(data)
+                rev = self.format.unpack(self.sock.recv(self.format.size))
+                if rev[0] == 1 :
+                        self.sensorEdit.setText(str(rev[1]))
+                elif rev[0] == 2 :
+                        self.sensorEdit_2.setText(str(rev[1]))
 
-    def updateWeight(self, table, weight) :
-        if __debug__:
-            print('Update')
-        ## @ii -> 구조체 : integer 2개
-        # data = struct.pack('@ii', pin, status)
-        # test = struct.unpack("@ii", data)
-        if self.connect_mode == True :
-            data = self.format.pack(table, weight)
-            req = self.sock.send(data)
-            rev = self.format.unpack(self.sock.recv(self.format.size))
-            if rev[0] == 1 :
-                    self.sensorEdit.setText(str(rev[1]))
-            elif rev[0] == 2 :
-                    self.sensorEdit_2.setText(str(rev[1]))
+    # 현재 조정 주우우우우우우우우우우우우웅
+    else:
+        def updateWeight(self, table, weight) :
+            if __debug__:
+                print('Converting')
+            ## @ii -> 구조체 : integer 2개
+            # data = struct.pack('@ii', pin, status)
+            # test = struct.unpack("@ii", data)
+            if self.connect_mode == True :
+                data = self.format.pack(table, weight)
+                req = self.sock.send(data)
+                rev = self.format.unpack(self.sock.recv(self.format.size))
+                if rev[0] == 1 :
+                    self.weightTopercent(str(rev[1]))
+                    self.timeLabel1.setText(str(rev[1]))
+                elif rev[0] == 2 :
+                    self.weightTopercent(str(rev[1]))
+                    self.timeLabel2.setText(str(rev[1]))
+
+    def weightTopercent(self, weight):
+        (WEIGHT - weight) / 100  
+           
+        
 
     def stoptimer1(self) :
         self.timer2.stop()

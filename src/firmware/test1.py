@@ -46,10 +46,10 @@ class WindowClass(QMainWindow, from_class) :
         self.timer2.timeout.connect(self.timeout2)
 
     def timeout(self) :
-        self.updateLED(34, 1)
+        self.updateLED(1, 1)
 
     def timeout2(self) :
-        self.updateLED(35, 1)
+        self.updateLED(2, 1)
 
 
     def stoptimer(self) :
@@ -66,18 +66,18 @@ class WindowClass(QMainWindow, from_class) :
         self.timer2.start(1000)
 
 
-    def updateLED(self, pin, status) :
+    def updateLED(self, table, weight) :
 
         ## @ii -> 구조체 : integer 2개
-        # data = struct.pack('@ii', pin, status)
+        # data = struct.pack('@ii', table, weight)
         # test = struct.unpack("@ii", data)
         if self.connect_mode == True :
-            data = self.format.pack(pin, status)
+            data = self.format.pack(table, weight)
             req = self.sock.send(data)
             rev = self.format.unpack(self.sock.recv(self.format.size))
-            if rev[0] == 34 :
+            if rev[0] == 1 :
                     self.sensorEdit.setText(str(rev[1]))
-            elif rev[0] == 35 :
+            elif rev[0] == 2 :
                     self.sensorEdit_2.setText(str(rev[1]))
     
 

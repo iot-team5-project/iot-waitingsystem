@@ -61,6 +61,14 @@ void loop() {
           //Serial.println(Serial2.available());
           Serial2.readBytes((byte *)&value1, sizeof(value1));
           Serial2.readBytes((byte *)&value2, sizeof(value2));
+
+          if (value1 < 0 ) {
+            value1 = 0;
+          }
+
+          if (value2 < 0 ) {
+            value2 = 0;
+          }
       }
 
       while (client.available() > 0) {

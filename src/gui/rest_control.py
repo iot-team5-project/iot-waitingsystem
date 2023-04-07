@@ -12,16 +12,50 @@ waitCount = 0
 class Control_TowerClass(QDialog, rest_control) :
     user_newWindow = None
     statusTable=[['admin'], [0], [0], [0], [1], [2], [3], [1]]
+    
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Restaurant Control Tower")
-        self.btnUser.clicked.connect(self.customerWindow)
-        self.btnAdmin.clicked.connect(self.addTable)
-
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateDateTime)
         self.timer.start(1000)
+        self.btnUser.clicked.connect(self.customerWindow)
+        self.btnAdmin.clicked.connect(self.addTable)
+        self.WaitingList.cellDoubleClicked.connect(self.selectCustom)
+
+    def selectCustom(self, row):
+        infodialog = QDialog()
+        uic.loadUi("customerInfo.ui", infodialog)
+
+        def adminCustomerEntrance():
+            for tableInfo in Control_TowerClass.statusTable:
+                if Customer.Waitcustomer_info == []:
+                    break
+                elif tableInfo == [0]:
+                    index = Control_TowerClass.statusTable.index([0])
+                    Control_TowerClass.statusTable[index] = [1]
+                    myWindows.WaitingList.removeRow(selectItem.row())
+                    Customer.Waitcustomer_info.remove(info)
+                    infodialog.close()
+
+        def adminCustomerDelete():
+            bookedCancel = QMessageBox.question(self, '예약취소', '예약을 취소하시겠습니까?', QMessageBox.Yes | QMessageBox.Yes, QMessageBox.No)
+            if bookedCancel == QMessageBox.Yes:
+                myWindows.WaitingList.removeRow(selectItem.row())
+                Customer.Waitcustomer_info.remove(info)
+                infodialog.close()
+    
+        for info in Customer.Waitcustomer_info:
+            selectItem = self.WaitingList.item(row, 0)
+            if info[0] == selectItem.text():
+                infodialog.infoLabel.setText("|| 대기번호: "+ info[0] +" || 인원수: " + info[1] +"명"+" || \n"+"연락처: "+ info[2])
+                print(info)
+                infodialog.btnEntrance.clicked.connect(adminCustomerEntrance)
+                infodialog.btnDelete.clicked.connect(adminCustomerDelete)
+
+        infodialog.btnConfirm.clicked.connect(infodialog.close)
+        infodialog.exec_()
 
     def updateDateTime(self):
         now = QDateTime.currentDateTime()
@@ -81,11 +115,6 @@ class Customer(QDialog, user_basic) :
         self.btnVal.clicked.connect(self.phoneVal)
         self.btnLine.clicked.connect(self.customMakeLine)
         
-    def phoneVal(self):
-        phoneNum, ok = QInputDialog.getText(self, '줄서기 예약 확인', '예약하신 연락처를 적어주세요')
-        if ok and phoneNum:
-            self.customRegStatus(phoneNum)
-
     def customMakeLine(self):
         linedialog = QDialog()
         uic.loadUi("user_reg.ui", linedialog)
@@ -113,16 +142,21 @@ class Customer(QDialog, user_basic) :
         regdialog.exec_()
         Control_TowerClass.user_newWindow.close()
 
+    def phoneVal(self):
+        phoneNum, ok = QInputDialog.getText(self, '줄서기 예약 확인', '예약하신 연락처를 적어주세요')
+        if ok and phoneNum.isdigit():
+            self.customRegStatus(phoneNum)
+        else: QMessageBox.warning(self, '연락처 오류', '숫자만 입력해주세요.')
+
     def customRegStatus(self, phoneNum):
-        for info in Customer.Waitcustomer_info:
-            if info[2] == phoneNum:
+        for phoneInfo in Customer.Waitcustomer_info:
+            if phoneInfo[2] == phoneNum:
                 Customer.regMode = True
-                entranceNum = info[0]
-                Customer.delinfo = info
+                Customer.delinfo = phoneInfo
                 break
         for row in range(myWindows.WaitingList.rowCount()):
             item = myWindows.WaitingList.item(row, 0)
-            if item and item.text() == entranceNum:
+            if item and item.text() == phoneInfo[0]:
                 customerWait = myWindows.WaitingList.item(row, 0).row()
                 
         if Customer.regMode == True:
@@ -130,7 +164,7 @@ class Customer(QDialog, user_basic) :
             statusdialog = QDialog()
             uic.loadUi("user_status.ui", statusdialog)
             statusdialog.setWindowTitle("USER UI Status")
-            statusdialog.entranceNum.setText(entranceNum)
+            statusdialog.entranceNum.setText(phoneInfo[0])
             statusdialog.displayNum.setText(str(customerWait+1))
             statusdialog.btnCancel.clicked.connect(lambda : self.customListDelete(statusdialog, customerWait))
             statusdialog.exec_()

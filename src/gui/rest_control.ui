@@ -102,6 +102,9 @@
    </widget>
   </widget>
   <widget class="QTableWidget" name="WaitingList">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>940</x>
@@ -109,6 +112,15 @@
      <width>320</width>
      <height>610</height>
     </rect>
+   </property>
+   <property name="editTriggers">
+    <set>QAbstractItemView::NoEditTriggers</set>
+   </property>
+   <property name="selectionMode">
+    <enum>QAbstractItemView::ExtendedSelection</enum>
+   </property>
+   <property name="selectionBehavior">
+    <enum>QAbstractItemView::SelectRows</enum>
    </property>
    <attribute name="horizontalHeaderVisible">
     <bool>true</bool>

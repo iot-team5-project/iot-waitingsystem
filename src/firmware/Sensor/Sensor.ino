@@ -42,12 +42,12 @@ void loop() {
     long value1 = scale.get_units();
     long value2 = scale1.get_units();
 
-    // 무게 값 체크
-    // Serial.print("HX711_1 reading: ");
-    // Serial.println(value1);
+    // // 무게 값 체크
+    Serial.print("HX711_1 reading: ");
+    Serial.println(value1);
     // Serial.print("HX711_2 reading: ");
     // Serial.println(value2);
-
+.
     // esp에 시리얼 통신으로 값 보내기
     soft.write((byte*)&value1, sizeof(value1));
     soft.write((byte*)&value2, sizeof(value2));

@@ -3,29 +3,75 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
+import socket
+import struct
 
 rest_control = uic.loadUiType("rest_control.ui")[0]
 user_basic = uic.loadUiType("user_basic.ui")[0]
 
 waitCount = 0
+# Must input your Server IP
+IP = '192.168.0.129'
+PORT = 80
 
 class Control_TowerClass(QDialog, rest_control) :
     user_newWindow = None
-    statusTable=[['admin'], [0], [0], [0], [1], [2], [3], [1]]
+    # 점포 내 테이블
+    statusTable=[['admin'], [0], [0], [0], [1], [2], [3], [2]]
     
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Restaurant Control Tower")
+        #SET TIMER FOR REALTIME
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateDateTime)
         self.timer.start(1000)
+
+        # 손님 추가
         self.btnUser.clicked.connect(self.customerWindow)
         # self.btnAdmin.clicked.connect(self.addTable)
         self.WaitingList.cellDoubleClicked.connect(self.selectCustom)
 
+        #region 20230407_thro Sensor TCP/IP
+        #BUTTON COMMAND
+        
+        self.table1btn.clicked.connect(self.clicktable1)
+        self.stopbtn.clicked.connect(self.stoptimer1)
+        
+        self.table2btn.clicked.connect(self.clicktable2)
+        self.stopbtn_2.clicked.connect(self.stoptimer2)
+
+        # SENSOR UNIT INIT #timer2 = TABLE1, #timer3 = TABLE2
+        self.connect_mode = False
+
+        # If you want Debug with Offline mode, you must comment out 'self.connecting()'
+        if __debug__:
+            print('DEBUG MODE, NOT CONNECTED SERVER')
+        else:
+            self.connecting()
+
+        self.timer2 = QTimer(self)
+        self.timer3 = QTimer(self)
+
+        self.timer2.timeout.connect(self.timeout2)
+        self.timer3.timeout.connect(self.timeout3)
+
+        if __debug__:     
+            print('Init')
+        #endregion
+
+    #region 임용재 예약손님 확인창
     def selectCustom(self, row):
         infodialog = QDialog()
+        ##################################################################
+        # UI_file : customerInfo.ui                                      #
+        # trigger : Have a Waiting List                                  #
+        # Show Data : str(waitCount), headcount, phoneNum                #
+        # Select Function : Entrance - adminCustomerEntrance()           #
+        #                   Check - Dialog Close                         #
+        #                   Delete - adminCustromerDelete()              #
+        ##################################################################
         uic.loadUi("customerInfo.ui", infodialog)
         selectItem = self.WaitingList.item(row, 0)
         def adminCustomerEntrance():
@@ -57,11 +103,13 @@ class Control_TowerClass(QDialog, rest_control) :
         infodialog.btnConfirm.clicked.connect(infodialog.close)
         infodialog.exec_()
 
+    #endregion
+
     def updateDateTime(self):
         now = QDateTime.currentDateTime()
         dateTimeStr = now.toString("yyyy년 MM월 dd일 hh:mm:ss")
         self.currentTime.setText(dateTimeStr)
-
+    #region 임용재 Table Status 
     def confirmTable(self):
         statusT=Control_TowerClass.statusTable
         for i in range(1, 8):
@@ -79,6 +127,71 @@ class Control_TowerClass(QDialog, rest_control) :
             elif statusT[i] == [3]:
                 label.setText("호출 중")
                 back.setStyleSheet("background-color: #FA5858")
+    #endregion
+    #region 20230407_thro Server Connect
+    def connecting(self):
+        if __debug__:
+            print('connecting')
+
+        if self.connect_mode == False :
+            self.connect_mode = True
+            if __debug__:
+                print("Connected")
+
+            self.sock = socket.socket()
+            self.sock.connect((IP, int(PORT)))
+
+            self.format = struct.Struct('@ii')
+        elif self.connect_mode == True :
+            self.connect_mode = False
+            if __debug__:
+                print("DisConnected")
+            self.sock.close()
+            self.timer2.stop()
+            self.timer3.stop()
+
+    def timeout2(self) :
+        self.updateWeight(1, 1)
+
+    def timeout3(self) :
+        self.updateWeight(2, 1)
+
+    def updateWeight(self, table, weight) :
+        if __debug__:
+            print('Update')
+        ## @ii -> 구조체 : integer 2개
+        # data = struct.pack('@ii', pin, status)
+        # test = struct.unpack("@ii", data)
+        if self.connect_mode == True :
+            data = self.format.pack(table, weight)
+            req = self.sock.send(data)
+            rev = self.format.unpack(self.sock.recv(self.format.size))
+            if rev[0] == 1 :
+                    self.sensorEdit.setText(str(rev[1]))
+            elif rev[0] == 2 :
+                    self.sensorEdit_2.setText(str(rev[1]))
+
+    def stoptimer1(self) :
+        self.timer2.stop()
+
+    def clicktable1(self) :
+        if __debug__:
+            print('Clicked')
+        self.timer2.start(1000)
+
+    def stoptimer2(self) :
+        self.timer3.stop()
+
+    def clicktable2(self) :
+        if __debug__:
+            print('Clicked')
+        self.timer3.start(1000)
+
+    #클래스 소멸자
+    def __del__(self) :
+        self.sock.close()
+        self.connect_mode = False
+    #endregion
         
     def customerWindow(self):
         Control_TowerClass.user_newWindow = Customer()
@@ -94,6 +207,14 @@ class Control_TowerClass(QDialog, rest_control) :
         for i in range(3):
             self.WaitingList.item(row, i).setTextAlignment(Qt.AlignCenter)
 
+
+#region 임용재 Customer Class
+##################################################################
+# UI_file : user_basic.ui                                        #
+# trigger : Clicked User Button                                  #
+# Function : btnVal - phoneVal(self)                             #
+#            btnLine - customMakeline(self)                      #
+##################################################################
 class Customer(QDialog, user_basic) :
     regMode = False
     Waitcustomer_info = []
@@ -103,9 +224,21 @@ class Customer(QDialog, user_basic) :
         self.setupUi(self)
         self.setWindowTitle("USER UI")
         self.btnVal.clicked.connect(self.phoneVal)
-        self.btnLine.clicked.connect(self.customMakeLine)
-        
-    def customMakeLine(self):
+        self.btnLine.clicked.connect(self.customMakeline)
+    
+    def phoneVal(self):
+        phoneNum, ok = QInputDialog.getText(self, '줄서기 예약 확인', '예약하신 연락처를 적어주세요')
+        if ok and phoneNum.isdigit():
+            self.customRegStatus(phoneNum)
+        else: QMessageBox.warning(self, '연락처 오류', '숫자만 입력해주세요.')
+
+    ##################################################################
+    # UI_file : user_reg.ui                                          #
+    # trigger : Clicked btnVal button                                #
+    # Input Data : How Many Peoples, PhoneNumber                     #
+    # Output Data : Waiting Number                                   #
+    ##################################################################
+    def customMakeline(self):
         linedialog = QDialog()
         uic.loadUi("user_reg.ui", linedialog)
         linedialog.setWindowTitle("USER UI Register")
@@ -132,12 +265,12 @@ class Customer(QDialog, user_basic) :
         regdialog.exec_()
         Control_TowerClass.user_newWindow.close()
 
-    def phoneVal(self):
-        phoneNum, ok = QInputDialog.getText(self, '줄서기 예약 확인', '예약하신 연락처를 적어주세요')
-        if ok and phoneNum.isdigit():
-            self.customRegStatus(phoneNum)
-        else: QMessageBox.warning(self, '연락처 오류', '숫자만 입력해주세요.')
-
+    ##################################################################
+    # UI_file : user_status.ui                                       #
+    # trigger : Clicked btnLine button                               #
+    # input Data : Phone Number                                      #
+    # Output Data : Check the Waiting Number                         #
+    ##################################################################
     def customRegStatus(self, phoneNum):
         for phoneInfo in Customer.Waitcustomer_info:
             if phoneInfo[2] == phoneNum:
@@ -169,6 +302,8 @@ class Customer(QDialog, user_basic) :
             statusdialog.close()
         else:
             pass
+#endregion
+    
        
 if __name__ == "__main__":
     app = QApplication(sys.argv)

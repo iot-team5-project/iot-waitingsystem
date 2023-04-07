@@ -706,6 +706,81 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
+  <widget class="QPushButton" name="stopbtn">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>440</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>stop</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="table1btn">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>320</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Sensor</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="sensorEdit">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>380</y>
+     <width>131</width>
+     <height>31</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="table2btn">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>530</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Sensor2</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="sensorEdit_2">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>590</y>
+     <width>131</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="stopbtn_2">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>650</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>stop</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

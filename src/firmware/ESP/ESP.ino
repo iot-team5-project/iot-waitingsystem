@@ -62,6 +62,8 @@ void loop() {
           Serial2.readBytes((byte *)&value1, sizeof(value1));
           Serial2.readBytes((byte *)&value2, sizeof(value2));
       }
+      Serial.println(value1);
+      delay(1000);
 
       while (client.available() > 0) {
 
@@ -82,8 +84,8 @@ void loop() {
           memcpy(&data, &p, sizeof(p));
         }
 
-        // Serial.println(p.table);
-        // Serial.println(p.status);
+        Serial.println(p.table);
+        Serial.println(p.weight);
 
         client.write(data,8);
       }

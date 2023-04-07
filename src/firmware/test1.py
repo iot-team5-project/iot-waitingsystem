@@ -1,8 +1,8 @@
 import sys
-from PyQt6.QtWidgets import *
-from PyQt6.QtGui import *
-from PyQt6 import uic
-from PyQt6.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5 import uic
+from PyQt5.QtCore import *
 import socket
 import time
 import struct
@@ -10,7 +10,7 @@ import datetime
 
 
 # ui 파일 연결
-from_class = uic.loadUiType("/home/syh/Documents/amr_ws/ESP/test1/test1.ui")[0]
+from_class = uic.loadUiType("test1.ui")[0]
 
 # 화면 클래스
 class WindowClass(QMainWindow, from_class) :

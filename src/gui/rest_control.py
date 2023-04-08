@@ -263,7 +263,7 @@ class Control_TowerClass(QDialog, rest_control) :
         self.sock.close()
         self.connect_mode = False
     #endregion
-        
+
     def customerWindow(self):
         Control_TowerClass.user_newWindow = Customer()
         Control_TowerClass.user_newWindow.show()
@@ -290,16 +290,38 @@ class Control_TowerClass(QDialog, rest_control) :
 # Function : btnVal - phoneVal(self)                             #
 #            btnLine - customMakeline(self)                      #
 ##################################################################
-class Customer(QDialog, user_basic) :
+class Customer(QDialog, QThread, user_basic) :
+    if __debug__:
+        print('Customer Generate')
     regMode = False
     Waitcustomer_info = []
     delinfo = None
-    def __init__(self):
-        super().__init__()
+    time_changed = pyqtSignal(QTime)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setupUi(self)
         self.setWindowTitle("USER UI")
         self.btnVal.clicked.connect(self.phoneVal)
         self.btnLine.clicked.connect(self.customMakeline)
+        self.time_left = QTime(0, 0, 0).addSecs(3600)
+        if __debug__:
+            print('Timer Begin')
+
+    def run(self):
+        timer4 = QTimer()
+        timer4.setInterval(1000)
+
+        def update_time():
+            self.time_left = self.time_left.addSecs(-1)
+            self.time_changed.emit(self.time_left)
+            # 타이머가 끝날 경우 다음 조건 설정
+            if self.time_left == QTime(0,0,0):
+                timer4.stop()
+
+        timer4.timeout.connect(update_time)
+        timer4.start()
+        self.exec_()
     
     def phoneVal(self):
         phoneNum, ok = QInputDialog.getText(self, '줄서기 예약 확인', '예약하신 연락처를 적어주세요')

@@ -131,22 +131,32 @@
   <widget class="QTimeEdit" name="timeEdit">
    <property name="geometry">
     <rect>
-     <x>940</x>
-     <y>60</y>
-     <width>311</width>
-     <height>71</height>
+     <x>1030</x>
+     <y>50</y>
+     <width>201</width>
+     <height>61</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <pointsize>31</pointsize>
+     <pointsize>30</pointsize>
     </font>
    </property>
-   <property name="currentSection">
-    <enum>QDateTimeEdit::AmPmSection</enum>
+   <property name="buttonSymbols">
+    <enum>QAbstractSpinBox::NoButtons</enum>
    </property>
-   <property name="timeSpec">
-    <enum>Qt::UTC</enum>
+   <property name="maximumTime">
+    <time>
+     <hour>11</hour>
+     <minute>59</minute>
+     <second>59</second>
+    </time>
+   </property>
+   <property name="currentSection">
+    <enum>QDateTimeEdit::HourSection</enum>
+   </property>
+   <property name="displayFormat">
+    <string>h:mm</string>
    </property>
   </widget>
  </widget>

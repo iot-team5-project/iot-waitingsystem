@@ -56,9 +56,10 @@ void loop() {
     while (client.connected()) {
       char data[8];
 
+      Serial2.write('a');
+      Serial.println(Serial2.available());
       // 시리얼 통신을 통해 아두이노 우노에서 센서 값 가져온다
-      if(Serial2.available() >= sizeof(value1) + sizeof(value2)) {
-          //Serial.println(Serial2.available());
+      if(Serial2.available() == sizeof(value1) + sizeof(value2)) {
           Serial2.readBytes((byte *)&value1, sizeof(value1));
           Serial2.readBytes((byte *)&value2, sizeof(value2));
 
@@ -69,6 +70,11 @@ void loop() {
           if (value2 < 0 ) {
             value2 = 0;
           }
+      }
+
+      //serial 버퍼에 불필요한 데이터가 남아있으면 비우기
+      while (Serial2.available()) {
+        Serial2.read();
       }
 
       while (client.available() > 0) {

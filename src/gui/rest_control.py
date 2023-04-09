@@ -23,8 +23,8 @@ class Time_Run(QThread) :
         while self.running == True:
             self.update.emit()
             time.sleep(1)
-    def stop(self):
-        self.running = False
+    # def stop(self):
+    #     self.running = False
 
 class Table_StateClass(QDialog, table_state) :
     def __init__(self, tableNum) :
@@ -32,32 +32,53 @@ class Table_StateClass(QDialog, table_state) :
         self.setupUi(self)
         self.setWindowTitle("Table State view")
         self.tableNum.setText(str(tableNum))
+        self.btnCook.clicked.connect(lambda: self.cookComplete(tableNum))
+        self.btnFinish.clicked.connect(lambda: self.tableOut(tableNum))
+        self.btnClean.clicked.connect(lambda: self.cleanComplete(tableNum))
+        self.btnCall.clicked.connect(lambda: self.tableCall(tableNum))
+        myWindows.currentTime.textChanged.connect(lambda : self.selectTableState(tableNum))
+
+    def selectTableState(self, tableNum):
         if Control_TowerClass.statusTable[tableNum][0] == 0:
             self.tableStateLabel.setText("고객 대기 중")
             self.tableStateBack.setStyleSheet("background-color: #01DF01")
-            self.timeLabel.setText(str(datetime.timedelta(seconds=Control_TowerClass.statusTable[tableNum][1])))
+            self.timeLabel.hide()
         elif Control_TowerClass.statusTable[tableNum][0] == 1:
             self.tableStateLabel.setText("테이블 이용 중")
             self.tableStateBack.setStyleSheet("background-color: #F7D358")
-            self.timeLabel.setText(str(datetime.timedelta(seconds=Control_TowerClass.statusTable[tableNum][1])))
+            self.timeLabel.show()
+            self.timeLabel.setText("남은시간: "+str(datetime.timedelta(seconds=Control_TowerClass.statusTable[tableNum][1])))
         elif Control_TowerClass.statusTable[tableNum][0] == 2:
-            self.tableStateLabel.setText("조리 완료")
+            self.tableStateLabel.setText("조리가 완료되었습니다.\n"+str(tableNum)+"번 테이블로 음식을 가져다주세요")
             self.tableStateBack.setStyleSheet("background-color: #DF7401")
-            self.timeLabel.setText(str(datetime.timedelta(seconds=Control_TowerClass.statusTable[tableNum][1])))
+            self.timeLabel.setText("남은시간: "+str(datetime.timedelta(seconds=Control_TowerClass.statusTable[tableNum][1])))
         elif Control_TowerClass.statusTable[tableNum][0] == 3:
-            self.tableStateLabel.setText("청소 중")
+            self.tableStateLabel.setText(str(tableNum)+"번 테이블 청소가 필요합니다.\n청소를 완료 후 청소 완료 버튼을 눌러주세요")
             self.tableStateBack.setStyleSheet("background-color: #2ECCFA")
-            self.timeLabel.setText(str(datetime.timedelta(seconds=Control_TowerClass.statusTable[tableNum][1])))
+            self.timeLabel.hide()
         elif Control_TowerClass.statusTable[tableNum][0] == 4:
-            self.tableStateLabel.setText("호출 중")
+            self.tableStateLabel.setText(str(tableNum)+"번 테이블에서 호출 중 입니다.")
             self.tableStateBack.setStyleSheet("background-color: #FA5858")
-            self.timeLabel.setText(str(datetime.timedelta(seconds=Control_TowerClass.statusTable[tableNum][1])))
-        self.btnCook.clicked.connect(lambda: self.cookComplete(tableNum))
-        
+            self.timeLabel.setText("남은시간: "+str(datetime.timedelta(seconds=Control_TowerClass.statusTable[tableNum][1])))    
 
     def cookComplete(self, tableNum):
         Control_TowerClass.statusTable[tableNum][0] = 2
         Control_TowerClass.table_newWindow.close()
+
+    def tableOut(self, tableNum):
+        Control_TowerClass.statusTable[tableNum][0] = 3
+        Control_TowerClass.table_newWindow.close()
+
+    def cleanComplete(self, tableNum):
+        Control_TowerClass.statusTable[tableNum][0] = 0
+        Control_TowerClass.statusTable[tableNum][1] = 7200
+        Control_TowerClass.table_newWindow.close()
+
+    def tableCall(self, tableNum):
+        if Control_TowerClass.statusTable[tableNum][0] == 4:
+            Control_TowerClass.statusTable[tableNum][0] = 1
+        elif Control_TowerClass.statusTable[tableNum][0] == 1:
+            Control_TowerClass.statusTable[tableNum][0] = 4
 
 class Control_TowerClass(QDialog, rest_control) :
     
@@ -80,7 +101,7 @@ class Control_TowerClass(QDialog, rest_control) :
         self.btnTable5.clicked.connect(lambda: self.tableStateWindow(5))
         self.btnTable6.clicked.connect(lambda: self.tableStateWindow(6))
         self.btnTable7.clicked.connect(lambda: self.tableStateWindow(7))
-        self.btnAdmin.clicked.connect(self.timer120)
+        self.timer120()
         self.WaitingList.cellDoubleClicked.connect(self.selectCustomer)
         
     def selectCustomer(self, row):
@@ -123,14 +144,14 @@ class Control_TowerClass(QDialog, rest_control) :
         self.currentTime.setText(dateTimeStr)
 
     def timer120(self):
-        def dd():
+        def minusTime():
             statusT = Control_TowerClass.statusTable
             for i in range(1, 8):
-                if statusT[i][0] == 1:
+                if statusT[i][0] == 1 or statusT[i][0] == 2 or statusT[i][0] == 4:
                     statusT[i][1] -= 1
-        self.minusTime = Time_Run()
-        self.minusTime.start()
-        self.minusTime.update.connect(dd)
+        self.stopWatch = Time_Run()
+        self.stopWatch.start()
+        self.stopWatch.update.connect(minusTime)
 
     def confirmTable(self):
         statusT = Control_TowerClass.statusTable
@@ -141,20 +162,24 @@ class Control_TowerClass(QDialog, rest_control) :
             if statusT[i][0] == 0:
                 label.setText("고객 대기 중")
                 back.setStyleSheet("background-color: #01DF01")
+                time.hide()
             elif statusT[i][0] == 1:
                 label.setText("테이블 이용 중")
                 back.setStyleSheet("background-color: #F7D358")
+                time.show()
                 time.setText(str(datetime.timedelta(seconds=statusT[i][1])))
             elif statusT[i][0] == 2:
                 label.setText("조리 완료")
                 back.setStyleSheet("background-color: #DF7401")
+                time.setText(str(datetime.timedelta(seconds=statusT[i][1])))
             elif statusT[i][0] == 3:
                 label.setText("청소 중")
                 back.setStyleSheet("background-color: #2ECCFA")
+                time.hide()
             elif statusT[i][0] == 4:
                 label.setText("호출 중")
                 back.setStyleSheet("background-color: #FA5858")
-
+                time.setText(str(datetime.timedelta(seconds=statusT[i][1])))
   
     def customerWindow(self):
         Control_TowerClass.user_newWindow = Customer()
@@ -255,5 +280,4 @@ if __name__ == "__main__":
     myWindows = Control_TowerClass()
     myWindows.show()
     myWindows.currentTime.textChanged.connect(myWindows.confirmTable)
-    # myWindows.currentTime.textChanged.connect(myWindows.timer120)
     sys.exit(app.exec_())

@@ -163,14 +163,14 @@
   <widget class="QPushButton" name="btnUser">
    <property name="geometry">
     <rect>
-     <x>840</x>
-     <y>60</y>
-     <width>89</width>
-     <height>61</height>
+     <x>340</x>
+     <y>310</y>
+     <width>171</width>
+     <height>121</height>
     </rect>
    </property>
    <property name="text">
-    <string>user</string>
+    <string>USER</string>
    </property>
   </widget>
   <widget class="QGroupBox" name="groupBox2">
@@ -778,19 +778,6 @@
      <string/>
     </property>
    </widget>
-  </widget>
-  <widget class="QPushButton" name="btnAdmin">
-   <property name="geometry">
-    <rect>
-     <x>840</x>
-     <y>130</y>
-     <width>89</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>admin</string>
-   </property>
   </widget>
   <widget class="QLineEdit" name="currentTime">
    <property name="enabled">

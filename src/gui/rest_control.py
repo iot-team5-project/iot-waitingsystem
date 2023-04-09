@@ -91,12 +91,12 @@ class Table_StateClass(QDialog, table_state) :
 class Control_TowerClass(QDialog, rest_control) :
     
     user_newWindow = None
-
     # 점포 내 테이블
     table_newWindow = None
 
     statusTable=[['admin'], [0, 7200], [0, 7200], [0, 7200], [1, 7200], [2, 7200], [3, 7200], [4, 7200]]
-    
+    TableWeight=[['admin'], [0], [0]]
+
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -119,14 +119,6 @@ class Control_TowerClass(QDialog, rest_control) :
         self.WaitingList.cellDoubleClicked.connect(self.selectCustomer)
 
         #region 20230407_thro Sensor TCP/IP
-        # BUTTON COMMAND
-        
-        self.table1btn.clicked.connect(self.clicktable1)
-        self.stopbtn.clicked.connect(self.stoptimer1)
-        
-        self.table2btn.clicked.connect(self.clicktable2)
-        self.stopbtn_2.clicked.connect(self.stoptimer2)
-
         # SENSOR UNIT INIT #timer2 = TABLE1, #timer3 = TABLE2
         self.connect_mode = False
 
@@ -138,11 +130,10 @@ class Control_TowerClass(QDialog, rest_control) :
 
         self.timer2 = QTimer(self)
         self.timer3 = QTimer(self)
-
-
         self.timer2.timeout.connect(self.timeout2)
         self.timer3.timeout.connect(self.timeout3)
-
+        self.timer2.start(1000)
+        self.timer3.start(1000)
         if __debug__:     
             print('Init')
         #endregion
@@ -241,6 +232,7 @@ class Control_TowerClass(QDialog, rest_control) :
             elif statusT[i][0] == 4:
                 label.setText("호출 중")
                 back.setStyleSheet("background-color: #FA5858")
+                time.setText(str(datetime.timedelta(seconds=statusT[i][1])))
     #endregion
     #region 20230407_thro Server Connect 현재 조정 중
     def connecting(self):
@@ -264,68 +256,38 @@ class Control_TowerClass(QDialog, rest_control) :
             self.timer2.stop()
             self.timer3.stop()
 
-    if __debug__:
-        def updateWeight(self, table, weight) :
-            if __debug__:
-                print('Update')
-            ## @ii -> 구조체 : integer 2개
-            # data = struct.pack('@ii', pin, status)
-            # test = struct.unpack("@ii", data)
-            if self.connect_mode == True :
-                data = self.format.pack(table, weight)
-                req = self.sock.send(data)
-                rev = self.format.unpack(self.sock.recv(self.format.size))
-                if rev[0] == 1 :
-                        self.sensorEdit.setText(str(rev[1]))
-                elif rev[0] == 2 :
-                        self.sensorEdit_2.setText(str(rev[1]))
-
-    else:
-        def updateWeight(self, table, weight) :
-            if __debug__:
-                print('Converting')
-            ## @ii -> 구조체 : integer 2개
-            # data = struct.pack('@ii', pin, status)
-            # test = struct.unpack("@ii", data)
-            if self.connect_mode == True :
-                data = self.format.pack(table, weight)
-                req = self.sock.send(data)
-                rev = self.format.unpack(self.sock.recv(self.format.size))
-                if rev[0] == 1 :
-                    percentage = self.weightTopercent(str(rev[1]))
-                    percentage = int(percentage)
-                    self.sensorEdit.setText(str(rev[1]))
-                    # print(percentage)
-                    self.persentageLabel1.setText(str(percentage))
-                elif rev[0] == 2 :
-                    percentage2 = self.weightTopercent(str(rev[1]))
-                    percentage2 = int(percentage2)
-                    self.sensorEdit_2.setText(str(rev[1]))
-                    print(str(rev[1]))
-
+    def updateWeight(self, table, weight) :
+        if __debug__:
+            print('Converting')
+        ## @ii -> 구조체 : integer 2개
+        # data = struct.pack('@ii', pin, status)
+        # test = struct.unpack("@ii", data)
+        if self.connect_mode == True :
+            data = self.format.pack(table, weight)
+            req = self.sock.send(data)
+            rev = self.format.unpack(self.sock.recv(self.format.size))
+            if rev[0] == 1 :
+                percentage = self.weightTopercent(str(rev[1]))
+                percentage = int(percentage)
+                print(str(rev[1]))
+                Control_TowerClass.TableWeight[1][0] = (rev[1])
+                if Control_TowerClass.TableWeight[1][0] >= 100:
+                    Control_TowerClass.statusTable[1][0] = 1
+                # print(percentage)
+            elif rev[0] == 2 :
+                percentage2 = self.weightTopercent(str(rev[1]))
+                percentage2 = int(percentage2)
+                Control_TowerClass.TableWeight[2][0] = (rev[1])
+                if Control_TowerClass.TableWeight[2][0] >= 100:
+                    Control_TowerClass.statusTable[2][0] = 1
+                print(str(rev[1]))
+                # print(percentage2)
 # WEIGHT = 요리가 들어왔을 때 첫 수치
 # sensor_weight = 들어오는 수치 값 (잔량)
 # percentage = 전체 음식 값의 대한 현재 남은 퍼센테이지
     def weightTopercent(self, sensor_weight):
         percentage = (int(WEIGHT) - int(sensor_weight)) / int(WEIGHT) * 100
-        return 100 - percentage
-           
-
-    def stoptimer1(self) :
-        self.timer2.stop()
-
-    def clicktable1(self) :
-        if __debug__:
-            print('Clicked')
-        self.timer2.start(1000)
-
-    def stoptimer2(self) :
-        self.timer3.stop()
-
-    def clicktable2(self) :
-        if __debug__:
-            print('Clicked')
-        self.timer3.start(1000)
+        return percentage
 
     #클래스 소멸자
     def __del__(self) :
@@ -365,7 +327,6 @@ class Customer(QDialog, QThread, user_basic) :
     regMode = False
     Waitcustomer_info = []
     delinfo = None
-    time_changed = pyqtSignal(QTime)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -373,24 +334,8 @@ class Customer(QDialog, QThread, user_basic) :
         self.setWindowTitle("USER UI")
         self.btnVal.clicked.connect(self.phoneVal)
         self.btnLine.clicked.connect(self.customMakeline)
-        self.time_left = QTime(0, 0, 0).addSecs(3600)
         if __debug__:
             print('Timer Begin')
-
-    def run(self):
-        timer4 = QTimer()
-        timer4.setInterval(1000)
-
-        def update_time():
-            self.time_left = self.time_left.addSecs(-1)
-            self.time_changed.emit(self.time_left)
-            # 타이머가 끝날 경우 다음 조건 설정
-            if self.time_left == QTime(0,0,0):
-                timer4.stop()
-
-        timer4.timeout.connect(update_time)
-        timer4.start()
-        self.exec_()
     
     def phoneVal(self):
         phoneNum, ok = QInputDialog.getText(self, '줄서기 예약 확인', '예약하신 연락처를 적어주세요')

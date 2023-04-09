@@ -160,19 +160,6 @@
     </property>
    </column>
   </widget>
-  <widget class="QPushButton" name="btnUser">
-   <property name="geometry">
-    <rect>
-     <x>340</x>
-     <y>310</y>
-     <width>171</width>
-     <height>121</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>USER</string>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="groupBox2">
    <property name="geometry">
     <rect>
@@ -805,89 +792,17 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="stopbtn">
+  <widget class="QPushButton" name="btnUser">
    <property name="geometry">
     <rect>
-     <x>370</x>
-     <y>440</y>
-     <width>89</width>
-     <height>25</height>
+     <x>340</x>
+     <y>330</y>
+     <width>171</width>
+     <height>121</height>
     </rect>
    </property>
    <property name="text">
-    <string>stop</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="table1btn">
-   <property name="geometry">
-    <rect>
-     <x>370</x>
-     <y>320</y>
-     <width>89</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Sensor</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="sensorEdit">
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>350</y>
-     <width>131</width>
-     <height>31</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="table2btn">
-   <property name="geometry">
-    <rect>
-     <x>370</x>
-     <y>530</y>
-     <width>89</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Sensor2</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="sensorEdit_2">
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>590</y>
-     <width>131</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="stopbtn_2">
-   <property name="geometry">
-    <rect>
-     <x>370</x>
-     <y>650</y>
-     <width>89</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>stop</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="persentageLabel1">
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>390</y>
-     <width>131</width>
-     <height>31</height>
-    </rect>
+    <string>USER</string>
    </property>
   </widget>
  </widget>

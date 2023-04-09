@@ -81,7 +81,7 @@ class Control_TowerClass(QDialog, rest_control) :
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Restaurant Control Tower")
-        #SET TIMER FOR REALTIME
+        # SET TIMER FOR REALTIME
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateDateTime)
         self.timer.start(1000)
@@ -99,7 +99,7 @@ class Control_TowerClass(QDialog, rest_control) :
         self.WaitingList.cellDoubleClicked.connect(self.selectCustomer)
 
         #region 20230407_thro Sensor TCP/IP
-        #BUTTON COMMAND
+        # BUTTON COMMAND
         
         self.table1btn.clicked.connect(self.clicktable1)
         self.stopbtn.clicked.connect(self.stoptimer1)
@@ -119,6 +119,7 @@ class Control_TowerClass(QDialog, rest_control) :
         self.timer2 = QTimer(self)
         self.timer3 = QTimer(self)
 
+
         self.timer2.timeout.connect(self.timeout2)
         self.timer3.timeout.connect(self.timeout3)
 
@@ -126,8 +127,14 @@ class Control_TowerClass(QDialog, rest_control) :
             print('Init')
         #endregion
 
+    def timeout2(self) :
+        self.updateWeight(1, 1)
+
+    def timeout3(self) :
+        self.updateWeight(2, 1)
+
     #region 임용재 예약손님 확인창
-        
+
     def selectCustomer(self, row):
         infodialog = QDialog()
         ##################################################################
@@ -232,13 +239,8 @@ class Control_TowerClass(QDialog, rest_control) :
             self.sock.close()
             self.timer2.stop()
             self.timer3.stop()
+
     if __debug__:
-        def timeout2(self) :
-            self.updateWeight(1, 1)
-
-        def timeout3(self) :
-            self.updateWeight(2, 1)
-
         def updateWeight(self, table, weight) :
             if __debug__:
                 print('Update')
@@ -254,7 +256,6 @@ class Control_TowerClass(QDialog, rest_control) :
                 elif rev[0] == 2 :
                         self.sensorEdit_2.setText(str(rev[1]))
 
-    # 현재 조정 주우우우우우우우우우우우우웅
     else:
         def updateWeight(self, table, weight) :
             if __debug__:
@@ -267,16 +268,24 @@ class Control_TowerClass(QDialog, rest_control) :
                 req = self.sock.send(data)
                 rev = self.format.unpack(self.sock.recv(self.format.size))
                 if rev[0] == 1 :
-                    self.weightTopercent(str(rev[1]))
-                    self.timeLabel1.setText(str(rev[1]))
+                    percentage = self.weightTopercent(str(rev[1]))
+                    percentage = int(percentage)
+                    self.sensorEdit.setText(str(rev[1]))
+                    # print(percentage)
+                    self.persentageLabel1.setText(str(percentage))
                 elif rev[0] == 2 :
-                    self.weightTopercent(str(rev[1]))
-                    self.timeLabel2.setText(str(rev[1]))
+                    percentage2 = self.weightTopercent(str(rev[1]))
+                    percentage2 = int(percentage2)
+                    self.sensorEdit_2.setText(str(rev[1]))
+                    print(str(rev[1]))
 
-    def weightTopercent(self, weight):
-        (WEIGHT - weight) / 100  
+# WEIGHT = 요리가 들어왔을 때 첫 수치
+# sensor_weight = 들어오는 수치 값 (잔량)
+# percentage = 전체 음식 값의 대한 현재 남은 퍼센테이지
+    def weightTopercent(self, sensor_weight):
+        percentage = (int(WEIGHT) - int(sensor_weight)) / int(WEIGHT) * 100
+        return 100 - percentage
            
-        
 
     def stoptimer1(self) :
         self.timer2.stop()

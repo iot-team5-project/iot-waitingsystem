@@ -18,7 +18,7 @@ HX711 scale ;
 HX711 scale1 ;
 
 void setup() {
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   // esp에 보내주기 위해 tx ,rx 핀 설정
   soft.begin(9600);
@@ -36,12 +36,10 @@ void setup() {
 
 void loop() {
 
-  if (scale.is_ready() & scale1.is_ready()) {
-    
-    // esp에 4byte 값 2개를 넘겨주기 위한 변수 
-    long value1 = scale.get_units();
-    long value2 = scale1.get_units();
+  if(soft.available() > 0) {
+    //Serial.println(soft.available());
 
+<<<<<<< HEAD
     // // 무게 값 체크
     Serial.print("HX711_1 reading: ");
     Serial.println(value1);
@@ -52,7 +50,28 @@ void loop() {
     soft.write((byte*)&value1, sizeof(value1));
     soft.write((byte*)&value2, sizeof(value2));
   } 
+=======
+    //serial 버퍼에서 불필요한 데이터 비우기
+    while(soft.available() > 0) {
+      soft.read();
+    }
 
-  delay(1000);
+    if (scale.is_ready() && scale1.is_ready()) {
+>>>>>>> merge
 
+      // esp에 4byte 값 2개를 넘겨주기 위한 변수 
+      long value1 = scale.get_units();
+      long value2 = scale1.get_units();
+
+      // 무게 값 체크
+      //Serial.print("HX711_1 reading: ");
+      //Serial.println(value1);
+      //Serial.print("HX711_2 reading: ");
+      //Serial.println(value2);
+
+      // esp에 시리얼 통신으로 값 보내기
+      soft.write((byte*)&value1, sizeof(value1));
+      soft.write((byte*)&value2, sizeof(value2));
+    }
+  }
 }

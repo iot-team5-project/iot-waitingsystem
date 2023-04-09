@@ -61,6 +61,33 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
+<<<<<<< HEAD
+=======
+  <widget class="QLabel" name="timeLabel">
+   <property name="geometry">
+    <rect>
+     <x>930</x>
+     <y>50</y>
+     <width>300</width>
+     <height>60</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>30</pointsize>
+    </font>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+>>>>>>> merge
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>

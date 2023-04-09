@@ -72,7 +72,9 @@
    </property>
    <property name="font">
     <font>
-     <pointsize>30</pointsize>
+     <pointsize>20</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
     </font>
    </property>
    <property name="frameShape">
@@ -85,35 +87,17 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QPushButton" name="btnClean">
    <property name="geometry">
     <rect>
-     <x>799</x>
-     <y>60</y>
-     <width>121</width>
-     <height>40</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>20</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>남은 시간 : </string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton">
-   <property name="geometry">
-    <rect>
-     <x>520</x>
-     <y>60</y>
-     <width>240</width>
-     <height>80</height>
+     <x>30</x>
+     <y>590</y>
+     <width>160</width>
+     <height>90</height>
     </rect>
    </property>
    <property name="text">
-    <string>주문</string>
+    <string>청소완료</string>
    </property>
   </widget>
   <widget class="QLabel" name="tableStateLabel">
@@ -142,14 +126,40 @@
   <widget class="QPushButton" name="btnCook">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>200</y>
-     <width>89</width>
-     <height>25</height>
+     <x>30</x>
+     <y>390</y>
+     <width>160</width>
+     <height>90</height>
     </rect>
    </property>
    <property name="text">
     <string>조리완료</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnFinish">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>490</y>
+     <width>160</width>
+     <height>90</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>식사완료</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnCall">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>180</y>
+     <width>160</width>
+     <height>90</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>호출</string>
    </property>
   </widget>
  </widget>

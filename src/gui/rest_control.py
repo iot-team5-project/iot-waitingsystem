@@ -3,13 +3,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
-<<<<<<< HEAD
 import socket
 import struct
-=======
 import time 
 import datetime
->>>>>>> merge
 
 rest_control = uic.loadUiType("rest_control.ui")[0]
 user_basic = uic.loadUiType("user_basic.ui")[0]
@@ -43,12 +40,8 @@ class Table_StateClass(QDialog, table_state) :
         self.setupUi(self)
         self.setWindowTitle("Table State view")
         self.tableNum.setText(str(tableNum))
-<<<<<<< HEAD
-        
-        if Control_TowerClass.statusTable[tableNum] == [0]:
-=======
+
         if Control_TowerClass.statusTable[tableNum][0] == 0:
->>>>>>> merge
             self.tableStateLabel.setText("고객 대기 중")
             self.tableStateBack.setStyleSheet("background-color: #01DF01")
             self.timeLabel.setText(str(datetime.timedelta(seconds=Control_TowerClass.statusTable[tableNum][1])))
@@ -81,12 +74,8 @@ class Control_TowerClass(QDialog, rest_control) :
 
     # 점포 내 테이블
     table_newWindow = None
-<<<<<<< HEAD
-    statusTable=[['admin'], [0], [0], [0], [1], [2], [3], [4]]
 
-=======
     statusTable=[['admin'], [0, 7200], [0, 7200], [0, 7200], [1, 7200], [2, 7200], [3, 7200], [4, 7200]]
->>>>>>> merge
     
     def __init__(self):
         super().__init__()
@@ -108,7 +97,6 @@ class Control_TowerClass(QDialog, rest_control) :
         self.btnTable7.clicked.connect(lambda: self.tableStateWindow(7))
         self.btnAdmin.clicked.connect(self.timer120)
         self.WaitingList.cellDoubleClicked.connect(self.selectCustomer)
-<<<<<<< HEAD
 
         #region 20230407_thro Sensor TCP/IP
         #BUTTON COMMAND
@@ -139,9 +127,7 @@ class Control_TowerClass(QDialog, rest_control) :
         #endregion
 
     #region 임용재 예약손님 확인창
-=======
         
->>>>>>> merge
     def selectCustomer(self, row):
         infodialog = QDialog()
         ##################################################################
@@ -190,9 +176,7 @@ class Control_TowerClass(QDialog, rest_control) :
         now = QDateTime.currentDateTime()
         dateTimeStr = now.toString("yyyy년 MM월 dd일 hh:mm:ss")
         self.currentTime.setText(dateTimeStr)
-<<<<<<< HEAD
     #region 임용재 Table Status 
-=======
 
     def timer120(self):
         def dd():
@@ -204,7 +188,6 @@ class Control_TowerClass(QDialog, rest_control) :
         self.minusTime.start()
         self.minusTime.update.connect(dd)
 
->>>>>>> merge
     def confirmTable(self):
         statusT = Control_TowerClass.statusTable
         for i in range(1, 8):
@@ -227,7 +210,6 @@ class Control_TowerClass(QDialog, rest_control) :
             elif statusT[i][0] == 4:
                 label.setText("호출 중")
                 back.setStyleSheet("background-color: #FA5858")
-<<<<<<< HEAD
     #endregion
     #region 20230407_thro Server Connect 현재 조정 중
     def connecting(self):
@@ -318,10 +300,6 @@ class Control_TowerClass(QDialog, rest_control) :
         self.connect_mode = False
     #endregion
 
-=======
-
-  
->>>>>>> merge
     def customerWindow(self):
         Control_TowerClass.user_newWindow = Customer()
         Control_TowerClass.user_newWindow.show()

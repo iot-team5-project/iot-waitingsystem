@@ -61,8 +61,6 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-<<<<<<< HEAD
-=======
   <widget class="QLabel" name="timeLabel">
    <property name="geometry">
     <rect>
@@ -87,7 +85,6 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
->>>>>>> merge
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>

@@ -7,12 +7,14 @@ import socket
 import struct
 import time 
 import datetime
+from collections import deque
 
 rest_control = uic.loadUiType("rest_control.ui")[0]
 user_basic = uic.loadUiType("user_basic.ui")[0]
 table_state = uic.loadUiType("table_state.ui")[0]
 
 waitCount = 0
+
 # Must input your Server IP
 IP = '192.168.0.129'
 PORT = 80
@@ -292,16 +294,36 @@ class Control_TowerClass(QDialog, rest_control) :
                 req = self.sock.send(data)
                 rev = self.format.unpack(self.sock.recv(self.format.size))
                 if rev[0] == 1 :
-                    percentage = self.weightTopercent(str(rev[1]))
+                    value1 = process_data(rev[1])
+                    print(value1)
+                    percentage = self.weightTopercent(value1)
+                    print('doit')
                     percentage = int(percentage)
-                    self.sensorEdit.setText(str(rev[1]))
-                    # print(percentage)
+                    self.sensorEdit.setText(str(value1))
+                    print(percentage)
                     self.persentageLabel1.setText(str(percentage))
                 elif rev[0] == 2 :
-                    percentage2 = self.weightTopercent(str(rev[1]))
+                    value2 = self.process_data(rev[1])
+                    percentage2 = self.weightTopercent(value2)
                     percentage2 = int(percentage2)
-                    self.sensorEdit_2.setText(str(rev[1]))
-                    print(str(rev[1]))
+                    self.sensorEdit_2.setText(str(value2))
+                    print(percentage2)
+                    
+            def process_data(data):
+                # 링 버퍼 초기화
+                ring_buffer = deque(maxlen=5)
+                # 데이터를 링 버퍼에 추가
+                ring_buffer.append(data)
+                weights = [1, 1, 1, 1, 1]
+                
+                # 링 버퍼에 있는 데이터의 총 가중치 계산
+                total_weight = sum([a*b for a, b in zip(ring_buffer, weights)])
+                
+                # 총 가중치가 500 이상이면 데이터 처리
+                if total_weight >= WEIGHT:
+                    print("500g 이상 감지됨:", list(ring_buffer))
+                    # 링 버퍼 초기화
+                    ring_buffer.clear()
 
 # WEIGHT = 요리가 들어왔을 때 첫 수치
 # sensor_weight = 들어오는 수치 값 (잔량)
@@ -310,7 +332,6 @@ class Control_TowerClass(QDialog, rest_control) :
         percentage = (int(WEIGHT) - int(sensor_weight)) / int(WEIGHT) * 100
         return 100 - percentage
            
-
     def stoptimer1(self) :
         self.timer2.stop()
 

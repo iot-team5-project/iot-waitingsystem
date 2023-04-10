@@ -80,6 +80,7 @@ class Table_StateClass(QDialog, table_state) :
     def cleanComplete(self, tableNum):
         Control_TowerClass.statusTable[tableNum][0] = 0
         Control_TowerClass.statusTable[tableNum][1] = 7200
+        Control_TowerClass.tempTableWeight[tableNum] = 0
         Control_TowerClass.table_newWindow.close()
 
     def tableCall(self, tableNum):
@@ -93,9 +94,14 @@ class Control_TowerClass(QDialog, rest_control) :
     user_newWindow = None
     # 점포 내 테이블
     table_newWindow = None
+    prev_percentage1 = 100
+    prev_percentage2 = 100
+    tempTableWeight = ['admin', 0, 0, 0, 0, 0, 0, 0]
+    table1WeightOn = False
+    table2WeightOn = False
 
     statusTable=[['admin'], [0, 7200], [0, 7200], [0, 7200], [1, 7200], [2, 7200], [3, 7200], [4, 7200]]
-    TableWeight=[['admin'], [0], [0]]
+    TableWeight=[['admin'], [0], [0], [0], [0], [0], [0], [0]]
 
     def __init__(self):
         super().__init__()
@@ -144,6 +150,104 @@ class Control_TowerClass(QDialog, rest_control) :
     def timeout3(self) :
         self.updateWeight(2, 1)
 
+    #region 20230407_thro Server Connect 현재 조정 중
+    def connecting(self):
+        if __debug__:
+            print('connecting')
+
+        if self.connect_mode == False :
+            self.connect_mode = True
+            if __debug__:
+                print("Connected")
+
+            self.sock = socket.socket()
+            self.sock.connect((IP, int(PORT)))
+
+            self.format = struct.Struct('@ii')
+        elif self.connect_mode == True :
+            self.connect_mode = False
+            if __debug__:
+                print("DisConnected")
+            self.sock.close()
+            self.timer2.stop()
+            self.timer3.stop()
+
+    def updateWeight(self, table, weight) :
+        global tempTime1, tempTime2
+        if __debug__:
+            print('Converting')
+        ## @ii -> 구조체 : integer 2개
+        # data = struct.pack('@ii', pin, status)
+        # test = struct.unpack("@ii", data)
+        
+        if self.connect_mode == True :
+            data = self.format.pack(table, weight)
+            req = self.sock.send(data)
+            rev = self.format.unpack(self.sock.recv(self.format.size))
+            
+            
+            if rev[0] == 1 :
+                
+                if (rev[1]) > Control_TowerClass.tempTableWeight[1]:
+                    Control_TowerClass.table1WeightOn = True
+                    Control_TowerClass.tempTableWeight[1] = (rev[1])
+                    Control_TowerClass.statusTable[1][0] = 1
+                    tempTime1=Control_TowerClass.statusTable[1][1]
+                else :
+                    Control_TowerClass.table1WeightOn = False
+                
+                if (rev[1]) < Control_TowerClass.tempTableWeight[1]:
+                    Control_TowerClass.TableWeight[1][0] = (rev[1])
+                    
+                percentage1 = self.weightTopercent1((rev[1]))
+                if percentage1 is not None and percentage1 < Control_TowerClass.prev_percentage1:
+                    
+                    Control_TowerClass.statusTable[1][1]=int(tempTime1 * (percentage1/100))
+                    Control_TowerClass.prev_percentage1 = percentage1
+                
+                
+            elif rev[0] == 2 :
+                if (rev[1]) > Control_TowerClass.tempTableWeight[2]:
+                    Control_TowerClass.table2WeightOn = True
+                    Control_TowerClass.tempTableWeight[2] = (rev[1])
+                    Control_TowerClass.statusTable[2][0] = 1
+                    tempTime2=Control_TowerClass.statusTable[2][1]
+                else :
+                    Control_TowerClass.table2WeightOn = False
+                
+                if (rev[1]) < Control_TowerClass.tempTableWeight[2]:
+                    Control_TowerClass.TableWeight[2][0] = (rev[1])
+                    
+                percentage2 = self.weightTopercent2((rev[1]))
+                if percentage2 is not None and percentage2 < Control_TowerClass.prev_percentage2:
+                    
+                    Control_TowerClass.statusTable[2][1]=int(tempTime2 * (percentage2/100))
+                    Control_TowerClass.prev_percentage2 = percentage2
+# WEIGHT = 요리가 들어왔을 때 첫 수치
+# sensor_weight = 들어오는 수치 값 (잔량)
+# percentage = 전체 음식 값의 대한 현재 남은 퍼센테이지
+    def weightTopercent1(self, sensor_weight):
+        
+        if sensor_weight is not None and sensor_weight > 0:
+            percent1=int(sensor_weight/Control_TowerClass.tempTableWeight[1]*100)
+            return percent1
+        else:
+            pass
+
+    def weightTopercent2(self, sensor_weight):
+        
+        if sensor_weight is not None and sensor_weight > 0:
+            percent2=int(sensor_weight/Control_TowerClass.tempTableWeight[2]*100)
+            return percent2
+        else:
+            pass
+    #클래스 소멸자
+    def __del__(self) :
+        self.sock.close()
+        self.connect_mode = False
+    #endregion
+    
+    
     #region 임용재 예약손님 확인창
 
     def selectCustomer(self, row):
@@ -234,66 +338,7 @@ class Control_TowerClass(QDialog, rest_control) :
                 back.setStyleSheet("background-color: #FA5858")
                 time.setText(str(datetime.timedelta(seconds=statusT[i][1])))
     #endregion
-    #region 20230407_thro Server Connect 현재 조정 중
-    def connecting(self):
-        if __debug__:
-            print('connecting')
-
-        if self.connect_mode == False :
-            self.connect_mode = True
-            if __debug__:
-                print("Connected")
-
-            self.sock = socket.socket()
-            self.sock.connect((IP, int(PORT)))
-
-            self.format = struct.Struct('@ii')
-        elif self.connect_mode == True :
-            self.connect_mode = False
-            if __debug__:
-                print("DisConnected")
-            self.sock.close()
-            self.timer2.stop()
-            self.timer3.stop()
-
-    def updateWeight(self, table, weight) :
-        if __debug__:
-            print('Converting')
-        ## @ii -> 구조체 : integer 2개
-        # data = struct.pack('@ii', pin, status)
-        # test = struct.unpack("@ii", data)
-        if self.connect_mode == True :
-            data = self.format.pack(table, weight)
-            req = self.sock.send(data)
-            rev = self.format.unpack(self.sock.recv(self.format.size))
-            if rev[0] == 1 :
-                percentage = self.weightTopercent(str(rev[1]))
-                percentage = int(percentage)
-                print(str(rev[1]))
-                Control_TowerClass.TableWeight[1][0] = (rev[1])
-                if Control_TowerClass.TableWeight[1][0] >= 100:
-                    Control_TowerClass.statusTable[1][0] = 1
-                # print(percentage)
-            elif rev[0] == 2 :
-                percentage2 = self.weightTopercent(str(rev[1]))
-                percentage2 = int(percentage2)
-                Control_TowerClass.TableWeight[2][0] = (rev[1])
-                if Control_TowerClass.TableWeight[2][0] >= 100:
-                    Control_TowerClass.statusTable[2][0] = 1
-                print(str(rev[1]))
-                # print(percentage2)
-# WEIGHT = 요리가 들어왔을 때 첫 수치
-# sensor_weight = 들어오는 수치 값 (잔량)
-# percentage = 전체 음식 값의 대한 현재 남은 퍼센테이지
-    def weightTopercent(self, sensor_weight):
-        percentage = (int(WEIGHT) - int(sensor_weight)) / int(WEIGHT) * 100
-        return percentage
-
-    #클래스 소멸자
-    def __del__(self) :
-        self.sock.close()
-        self.connect_mode = False
-    #endregion
+    
 
     def customerWindow(self):
         Control_TowerClass.user_newWindow = Customer()
@@ -334,6 +379,9 @@ class Customer(QDialog, QThread, user_basic) :
         self.setWindowTitle("USER UI")
         self.btnVal.clicked.connect(self.phoneVal)
         self.btnLine.clicked.connect(self.customMakeline)
+        self.WaitTime()
+        self.entranceLiveTime.setText("약 "+self.min+"분 대기" )
+        
         if __debug__:
             print('Timer Begin')
     
@@ -342,7 +390,17 @@ class Customer(QDialog, QThread, user_basic) :
         if ok and phoneNum.isdigit():
             self.customRegStatus(phoneNum)
         else: QMessageBox.warning(self, '연락처 오류', '숫자만 입력해주세요.')
-
+    
+    def WaitTime(self):
+        for info in Control_TowerClass.statusTable:
+            if info[0]==0:
+                self.min = '0'
+                break
+            elif Control_TowerClass.statusTable[1][1] < Control_TowerClass.statusTable[2][1]:
+                self.min=str(round(Control_TowerClass.statusTable[1][1]/60))
+            
+            elif Control_TowerClass.statusTable[1][1] > Control_TowerClass.statusTable[2][1]:
+                self.min = str(round(Control_TowerClass.statusTable[2][1]/60))
     ##################################################################
     # UI_file : user_reg.ui                                          #
     # trigger : Clicked btnVal button                                #
@@ -354,6 +412,7 @@ class Customer(QDialog, QThread, user_basic) :
         uic.loadUi("user_reg.ui", linedialog)
         linedialog.setWindowTitle("USER UI Register")
         linedialog.btnReg.clicked.connect(lambda : self.customerReg(linedialog))
+        linedialog.entranceLiveTime.setText("약 "+self.min+"분 대기" )
         linedialog.exec_()
 
     def customerReg(self, linedialog):
@@ -373,6 +432,7 @@ class Customer(QDialog, QThread, user_basic) :
         uic.loadUi("user_reg_complete.ui", regdialog)
         regdialog.setWindowTitle("USER UI Complete")
         regdialog.entranceNum.setText(str(waitCount))
+        regdialog.entranceLiveTime.setText("약 "+self.min+"분 대기" )
         regdialog.exec_()
         Control_TowerClass.user_newWindow.close()
 
@@ -401,6 +461,7 @@ class Customer(QDialog, QThread, user_basic) :
             statusdialog.entranceNum.setText(phoneInfo[0])
             statusdialog.displayNum.setText(str(customerWait+1))
             statusdialog.btnCancel.clicked.connect(lambda : self.customListDelete(statusdialog, customerWait))
+            statusdialog.entranceLiveTime.setText("약 "+self.min+"분 대기" )
             statusdialog.exec_()
             Customer.regMode = False
         else: QMessageBox.warning(self, '연락처 불일치', '연락처를 다시 확인해주세요.')

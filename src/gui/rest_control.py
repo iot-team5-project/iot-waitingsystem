@@ -7,7 +7,9 @@ import socket
 import struct
 import time 
 import datetime
-from collections import deque
+
+Food_Weight = None
+Food_Weight2 = None
 
 rest_control = uic.loadUiType("rest_control.ui")[0]
 user_basic = uic.loadUiType("user_basic.ui")[0]
@@ -20,7 +22,8 @@ IP = '192.168.0.129'
 PORT = 80
 
 #g, gram
-WEIGHT = 1000
+WEIGHT = 176
+ERROR = WEIGHT * 0.1
 
 class Time_Run(QThread) :
     update = pyqtSignal()
@@ -93,12 +96,12 @@ class Table_StateClass(QDialog, table_state) :
 class Control_TowerClass(QDialog, rest_control) :
     
     user_newWindow = None
-
     # 점포 내 테이블
     table_newWindow = None
 
     statusTable=[['admin'], [0, 7200], [0, 7200], [0, 7200], [1, 7200], [2, 7200], [3, 7200], [4, 7200]]
-    
+    TableWeight=[['admin'], [0], [0]]
+
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -107,7 +110,8 @@ class Control_TowerClass(QDialog, rest_control) :
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateDateTime)
         self.timer.start(1000)
-
+        self.percentage = None
+        self.percentage2 = None
         # 손님 추가
         self.btnUser.clicked.connect(self.customerWindow)
         self.btnTable1.clicked.connect(lambda: self.tableStateWindow(1))
@@ -121,14 +125,6 @@ class Control_TowerClass(QDialog, rest_control) :
         self.WaitingList.cellDoubleClicked.connect(self.selectCustomer)
 
         #region 20230407_thro Sensor TCP/IP
-        # BUTTON COMMAND
-        
-        self.table1btn.clicked.connect(self.clicktable1)
-        self.stopbtn.clicked.connect(self.stoptimer1)
-        
-        self.table2btn.clicked.connect(self.clicktable2)
-        self.stopbtn_2.clicked.connect(self.stoptimer2)
-
         # SENSOR UNIT INIT #timer2 = TABLE1, #timer3 = TABLE2
         self.connect_mode = False
 
@@ -140,14 +136,19 @@ class Control_TowerClass(QDialog, rest_control) :
 
         self.timer2 = QTimer(self)
         self.timer3 = QTimer(self)
-
-
         self.timer2.timeout.connect(self.timeout2)
         self.timer3.timeout.connect(self.timeout3)
-
+        self.timer2.start(1000)
+        self.timer3.start(1000)
         if __debug__:     
             print('Init')
         #endregion
+        print(self.percentage)
+        if (self.percentage is not None):
+            Control_TowerClass.statusTable[1][1] * self.percentage
+        
+        if (self.percentage2 is not None):
+            Control_TowerClass.statusTable[2][1] * self.percentage2
 
     def timeout2(self) :
         self.updateWeight(1, 1)
@@ -231,7 +232,8 @@ class Control_TowerClass(QDialog, rest_control) :
                 label.setText("테이블 이용 중")
                 back.setStyleSheet("background-color: #F7D358")
                 time.show()
-                time.setText(str(datetime.timedelta(seconds=statusT[i][1])))
+                if (self.percentage is not None):
+                    time.setText(str(datetime.timedelta(seconds=statusT[i][1] * self.percentage)))
             elif statusT[i][0] == 2:
                 label.setText("조리 완료")
                 back.setStyleSheet("background-color: #DF7401")
@@ -243,6 +245,7 @@ class Control_TowerClass(QDialog, rest_control) :
             elif statusT[i][0] == 4:
                 label.setText("호출 중")
                 back.setStyleSheet("background-color: #FA5858")
+                time.setText(str(datetime.timedelta(seconds=statusT[i][1])))
     #endregion
     #region 20230407_thro Server Connect 현재 조정 중
     def connecting(self):
@@ -266,87 +269,44 @@ class Control_TowerClass(QDialog, rest_control) :
             self.timer2.stop()
             self.timer3.stop()
 
-    if __debug__:
-        def updateWeight(self, table, weight) :
-            if __debug__:
-                print('Update')
-            ## @ii -> 구조체 : integer 2개
-            # data = struct.pack('@ii', pin, status)
-            # test = struct.unpack("@ii", data)
-            if self.connect_mode == True :
-                data = self.format.pack(table, weight)
-                req = self.sock.send(data)
-                rev = self.format.unpack(self.sock.recv(self.format.size))
-                if rev[0] == 1 :
-                        self.sensorEdit.setText(str(rev[1]))
-                elif rev[0] == 2 :
-                        self.sensorEdit_2.setText(str(rev[1]))
-
-    else:
-        def updateWeight(self, table, weight) :
-            if __debug__:
-                print('Converting')
-            ## @ii -> 구조체 : integer 2개
-            # data = struct.pack('@ii', pin, status)
-            # test = struct.unpack("@ii", data)
-            if self.connect_mode == True :
-                data = self.format.pack(table, weight)
-                req = self.sock.send(data)
-                rev = self.format.unpack(self.sock.recv(self.format.size))
-                if rev[0] == 1 :
-                    value1 = process_data(rev[1])
-                    print(value1)
-                    percentage = self.weightTopercent(value1)
-                    print('doit')
-                    percentage = int(percentage)
-                    self.sensorEdit.setText(str(value1))
-                    print(percentage)
-                    self.persentageLabel1.setText(str(percentage))
-                elif rev[0] == 2 :
-                    value2 = self.process_data(rev[1])
-                    percentage2 = self.weightTopercent(value2)
-                    percentage2 = int(percentage2)
-                    self.sensorEdit_2.setText(str(value2))
-                    print(percentage2)
-                    
-            def process_data(data):
-                # 링 버퍼 초기화
-                ring_buffer = deque(maxlen=5)
-                # 데이터를 링 버퍼에 추가
-                ring_buffer.append(data)
-                weights = [1, 1, 1, 1, 1]
+    def updateWeight(self, table, weight) :
+        if __debug__:
+            print('Converting')
+        ## @ii -> 구조체 : integer 2개
+        # data = struct.pack('@ii', pin, status)
+        # test = struct.unpack("@ii", data)
+        if self.connect_mode == True :
+            data = self.format.pack(table, weight)
+            req = self.sock.send(data)
+            rev = self.format.unpack(self.sock.recv(self.format.size))
+            if rev[0] == 1 :
+                Control_TowerClass.TableWeight[1][0] = (rev[1])
+                if Control_TowerClass.TableWeight[1][0] >= WEIGHT-ERROR:
+                    Control_TowerClass.statusTable[1][0] = 1
+                self.percentage = self.weightTopercent(WEIGHT,Control_TowerClass.TableWeight[1][0])
+                #percentage = int(percentage)
+                if self.percentage == 1:
+                    self.percentage = 0 
+                print(Control_TowerClass.statusTable[1][1] * self.percentage)
+                print(self.percentage)
+            elif rev[0] == 2 :
+                Control_TowerClass.TableWeight[2][0] = (rev[1])
+                if Control_TowerClass.TableWeight[2][0] >= WEIGHT-ERROR:
+                    Control_TowerClass.statusTable[2][0] = 1
                 
-                # 링 버퍼에 있는 데이터의 총 가중치 계산
-                total_weight = sum([a*b for a, b in zip(ring_buffer, weights)])
+                self.percentage2 = self.weightTopercent(WEIGHT,Control_TowerClass.TableWeight[2][0])
+                #percentage2 = int(percentage2)
+                if self.percentage2 == 1:
+                    self.percentage2 = 0
+                #print(percentage2)
                 
-                # 총 가중치가 500 이상이면 데이터 처리
-                if total_weight >= WEIGHT:
-                    print("500g 이상 감지됨:", list(ring_buffer))
-                    # 링 버퍼 초기화
-                    ring_buffer.clear()
-
+                # print(percentage2)
 # WEIGHT = 요리가 들어왔을 때 첫 수치
 # sensor_weight = 들어오는 수치 값 (잔량)
 # percentage = 전체 음식 값의 대한 현재 남은 퍼센테이지
-    def weightTopercent(self, sensor_weight):
-        percentage = (int(WEIGHT) - int(sensor_weight)) / int(WEIGHT) * 100
-        return 100 - percentage
-           
-    def stoptimer1(self) :
-        self.timer2.stop()
-
-    def clicktable1(self) :
-        if __debug__:
-            print('Clicked')
-        self.timer2.start(1000)
-
-    def stoptimer2(self) :
-        self.timer3.stop()
-
-    def clicktable2(self) :
-        if __debug__:
-            print('Clicked')
-        self.timer3.start(1000)
+    def weightTopercent(self, total_weight, sensor_weight):
+        percentage = (int(total_weight) - int(sensor_weight)) / int(total_weight)
+        return 1 - round(percentage, 2)
 
     #클래스 소멸자
     def __del__(self) :
@@ -386,7 +346,6 @@ class Customer(QDialog, QThread, user_basic) :
     regMode = False
     Waitcustomer_info = []
     delinfo = None
-    time_changed = pyqtSignal(QTime)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -394,24 +353,8 @@ class Customer(QDialog, QThread, user_basic) :
         self.setWindowTitle("USER UI")
         self.btnVal.clicked.connect(self.phoneVal)
         self.btnLine.clicked.connect(self.customMakeline)
-        self.time_left = QTime(0, 0, 0).addSecs(3600)
         if __debug__:
             print('Timer Begin')
-
-    def run(self):
-        timer4 = QTimer()
-        timer4.setInterval(1000)
-
-        def update_time():
-            self.time_left = self.time_left.addSecs(-1)
-            self.time_changed.emit(self.time_left)
-            # 타이머가 끝날 경우 다음 조건 설정
-            if self.time_left == QTime(0,0,0):
-                timer4.stop()
-
-        timer4.timeout.connect(update_time)
-        timer4.start()
-        self.exec_()
     
     def phoneVal(self):
         phoneNum, ok = QInputDialog.getText(self, '줄서기 예약 확인', '예약하신 연락처를 적어주세요')
